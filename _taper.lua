@@ -3,14 +3,12 @@
 -- TODO 
 -- finish face plate functionality
 -- add musical speed controls
--- rec level controls
--- loop postion indicator
--- etc etc etc 
+
 
 With = 1
 wWith = {1,0}
 bCast = 0
-w1 = 1
+w1 = 0
 w2 = 0
 wPlay = {0,0}
 wRev = {0,0}
@@ -45,12 +43,26 @@ end
 ----------
 ---------
 --- gridding
---------------------
--- can play / reverse / record / echo / loop start / loop end / loop active
--- for 2 W/s in tape mode
---------------------
 
 g.key = function(x,y,z)
+  if w1 == 1 and w2 == 1 then
+    bCast = 1
+    Lights()
+    print('bCast ' .. bCast)
+  end
+  
+  if z == 0 then
+    if y == 8 then
+      if x == 1 then
+        w1 = 0
+        
+      elseif x == 2 then
+        w2 = 0
+        
+      end
+    end
+  end
+  
   
   if z == 1 then
    
@@ -60,11 +72,20 @@ g.key = function(x,y,z)
       if x == 1 then
         wWith[1] = 1 
         wWith[2] = 0
+        w1 = 1
+        if bCast then
+          bCast = 0
+        end
       elseif x == 2 then
         wWith[1] = 0
         wWith[2] = 1
+        w2 = 1
+        if bCast then
+          bCast = 0
+        end
       end
       With = x
+      print('bCast ' .. bCast)
       print("With = " .. With)
     end
     
@@ -113,10 +134,12 @@ g.key = function(x,y,z)
         wStart[With] = 1 - wStart[With]
         wEnd[With] = 1 - wEnd[With]
         wLoop[With] = 1 - wLoop[With]
-        crow.ii.wtape[With].loop_active(wLoop[With])
+        lActive(With,wLoop[With])
       end
       
     end
+    
+   
     -- call to update grid lights
     Lights()
     
@@ -128,8 +151,13 @@ end
 function Lights()
 -- illuminate the grid based on current status of w/
 -- which w/
-  g:led(1,8,wWith[1]*14+1)  
-  g:led(2,8,wWith[2]*14+1)  
+  if bCast == 1 then
+    g:led(1,8,14+1)  
+    g:led(2,8,14+1)  
+  else
+    g:led(1,8,wWith[1]*14+1)  
+    g:led(2,8,wWith[2]*14+1)  
+  end
 -- who is playing???
   g:led(1,7,wPlay[With]*14+1)
 -- is it reversed???
@@ -143,6 +171,9 @@ function Lights()
   g:led(2,5, wEnd[With]*14+1)
 -- illuminate key for loop activation
   g:led(3,5, 1)
+  
+-- will start creating indicators for both W/s current state. active W/ will be displayed brighter than inactive W/   
+
 -- to refresh the lights
   g:refresh()
 end
@@ -157,8 +188,10 @@ end
 
 function play(w,p)
   if bCast == 1 then
-    crow.ii.wtape[1].play(p)
-    crow.ii.wtape[2].play(p)
+    for i = 1, 2 do
+      wPlay[i] = p
+      crow.ii.wtape[i].play(p)
+    end
   else
     crow.ii.wtape[w].play(p)
   end
@@ -166,8 +199,10 @@ end
 
 function rec(w,p)
   if bCast == 1 then
-    crow.ii.wtape[1].record(p)
-    crow.ii.wtape[2].record(p)
+    for i = 1, 2 do
+      wRec[i] = p
+      crow.ii.wtape[i].record(p)
+    end
   else
     crow.ii.wtape[w].record(p)
   end
@@ -175,8 +210,10 @@ end
 
 function echo(w,p)
   if bCast == 1 then
-    crow.ii.wtape[1].echo_mode(p)
-    crow.ii.wtape[2].echo_mode(p)
+    for i = 1, 2 do
+      wEcho[i] = p
+      crow.ii.wtape[i].echo_mode(p)
+    end
   else
     crow.ii.wtape[w].echo_mode(p)
   end
@@ -185,8 +222,10 @@ end
 
 function rev(w)
   if bCast == 1 then
-    crow.ii.wtape[1].reverse()
-    crow.ii.wtape[2].reverse()
+    for i = 1, 2 do
+      wRev[i] = p
+      crow.ii.wtape[i].reverse()
+    end
   else
     crow.ii.wtape[w].reverse()
   end
@@ -194,8 +233,10 @@ end
 
 function lStart(w,p)
   if bCast == 1 then
-    crow.ii.wtape[1].loop_start(p)
-    crow.ii.wtape[2].loop_start(p)
+    for i = 1, 2 do
+      wStart[i] = p
+      crow.ii.wtape[i].loop_start(p)
+    end
   else
     crow.ii.wtape[w].loop_start(p)
   end
@@ -203,21 +244,38 @@ end
 
 function lEnd(w,p)
   if bCast == 1 then
-    crow.ii.wtape[1].loop_end(p)
-    crow.ii.wtape[2].loop_end(p)
+    for i = 1, 2 do
+      wEnd[i] = p
+      crow.ii.wtape[i].loop_end(p)
+    end
   else
     crow.ii.wtape[w].loop_end(p)
   end
 end
 
+function lActive(w,p)
+  if bCast == 1 then
+    for i = 1, 2 do
+      wLoop[i] = p
+      crow.ii.wtape[i].loop_active(p)
+    end
+  else
+    crow.ii.wtape[With].loop_active(p)
+  end
+end
 -- to determine getter calls!!!!!
+
+
 crow.ii.wtape.event = function( e, value )
 	if e.name == 'loop_start' then
--- handle record response
--- e.arg: first argument, ie channel
--- e.device: index of device
- 
-  print('loop_start ' .. value)
+      print('loop_start ' .. value) -- will print the time stamp of loop start
+    elseif e.name == 'loop_end' then
+      print('loop_end ' .. value) -- will print value of loop end
+    elseif e.name == 'timestamp' then
+      print('timestamp ' .. value) -- will print current playhead timestamp
+     -- we can do more than just print the value here
+     -- we can also save it in a previously defined variable
+      -- wTime = value  -- now wTime will be filled with the current timestamp
 	end
 end
 
