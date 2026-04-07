@@ -234,9 +234,16 @@ function play(w,p)
     for i = 1, 2 do
       wPlay[i] = p
       crow.ii.wtape[i].play(p)
+      
     end
   else
     crow.ii.wtape[w].play(p)
+  end
+  if wStart[1] == 1 then
+    l1:start()
+  end
+  if wStart[2] == 1 then
+    l2:start()
   end
 end
 
@@ -352,6 +359,7 @@ function lActive(w,p)
         l2:stop()
       elseif p == 1 then
         crow.ii.wtape[w].timestamp(lStime[w])
+        crow.ii.wtape[w].loop_active(p)
         l2:start()
       end
     end
@@ -395,6 +403,9 @@ l1.event = function()
   g:led(lPos[1]-dir[1],1,1)
   g:led(lPos[1],1,15)
   Lights()
+  if wPlay[1] == 0 then
+    l1:stop()
+  end
 end
 
 l2 = metro.init()
@@ -404,6 +415,9 @@ l2.event = function()
   g:led(lPos[2]-dir[2],2,1)
   g:led(lPos[2],2,15)
   Lights()
+  if wPlay[2] == 0 then
+    l2:stop()
+  end
 end
 
 -- below is 1a test for storing metros in a list and calling them programatically.
