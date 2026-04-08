@@ -508,7 +508,7 @@ function newRhythm()
   playRate = {}
   playPan = {}
   playTime = {}
-  
+  playCount = 1
   -- generate a random number for newBufLeng, witihin a range of values
   newBufLeng = math.random(bufLengMin,bufLengMax)
   
