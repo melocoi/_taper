@@ -444,14 +444,12 @@ end
 -----------------------------------------------------
 -----------------------------------------------------
 -- an algorithm to randomly jumble a loop
--- taken from my wip script REVAEW
+-- taken from wip script REVAEW
 -- built for softcut initally, 
 -- but could possibly work for w/tape?????
 -- and it seems to.
 -- run the newRhythm() function to jumble your loop
--- run the stopRhythm() function to return to the normal loop
--- if you like what you hear, record it to your other W/
--- but we could make it possible to save jumbles in the future.
+-- currently no way out of it. But still fun
 -----------------------------------------------------
 -----------------------------------------------------
 sampleBufLeng = 0 --200
@@ -482,9 +480,14 @@ playClock = metro.init()
 playClock.time = 1
 playClock.event = function()
   --softcut.rate(2,playRate[playCount])
-  crow.ii.wtape[1].speed(playRate[playCount])
+  if playRate[playCount] ~= nil then
+    crow.ii.wtape[1].speed(playRate[playCount])
+  end
   --softcut.loop_start(2,playBack[playCount]/100)
-  crow.ii.wtape[1].timestamp(playBack[playCount])
+  if playBack[playCount] ~= nil then
+    crow.ii.wtape[1].timestamp(playBack[playCount])
+  end
+  
   --softcut.loop_end(2,(playBack[playCount]/100)+1)
   --softcut.pan(2,(playPan[playCount]))
   playClock.time = playTime[playCount]
