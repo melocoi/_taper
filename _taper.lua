@@ -285,6 +285,7 @@ function echo(w,p)
   end
 end
 
+-- TODO change reverse to just invert speed based on dir
 function rev(w)
   if bCast == 1 then
     for i = 1, 2 do
@@ -443,9 +444,14 @@ end
 -----------------------------------------------------
 -----------------------------------------------------
 -- an algorithm to randomly jumble a loop
--- taken from wip script REVAEW
+-- taken from my wip script REVAEW
 -- built for softcut initally, 
 -- but could possibly work for w/tape?????
+-- and it seems to.
+-- run the newRhythm() function to jumble your loop
+-- run the stopRhythm() function to return to the normal loop
+-- if you like what you hear, record it to your other W/
+-- but we could make it possible to save jumbles in the future.
 -----------------------------------------------------
 -----------------------------------------------------
 sampleBufLeng = 0 --200
@@ -475,10 +481,12 @@ dTime = 0.3
 playClock = metro.init()
 playClock.time = 1
 playClock.event = function()
-  softcut.rate(2,playRate[playCount])
-  softcut.loop_start(2,playBack[playCount]/100)
+  --softcut.rate(2,playRate[playCount])
+  crow.ii.wtape[1].speed(playRate[playCount])
+  --softcut.loop_start(2,playBack[playCount]/100)
+  crow.ii.wtape[1].timestamp(playBack[playCount])
   --softcut.loop_end(2,(playBack[playCount]/100)+1)
-  softcut.pan(2,(playPan[playCount]))
+  --softcut.pan(2,(playPan[playCount]))
   playClock.time = playTime[playCount]
   --softcut.play(2,1)
   playCount = playCount + 1
@@ -491,7 +499,7 @@ end
 
 
 function newRhythm()
-  
+  playClock:stop()
   --clear tables
   playBack = {}
   playRate = {}
@@ -505,9 +513,10 @@ function newRhythm()
   for i = 1, newBufLeng do
     
     -- play back order
-    table.insert(playBack,math.random(0,sampleBufLeng)) 
-    table.insert(playTime, math.random(1,20)/100)
-    table.insert(playPan,(math.random(1,150)/100)-0.75)
+    table.insert(playBack,(math.random() * (lEtime[1] - lStime[1]) + lStime[1]))
+    --table.insert(playBack,math.random(0,sampleBufLeng)) 
+    table.insert(playTime, math.random(11,50)/100)
+    --table.insert(playPan,(math.random(1,150)/100)-0.75)
     
     -- play back speeds
     diceRoll = math.random(1,20)
@@ -520,7 +529,17 @@ function newRhythm()
     -- other play back parameters
     
   end
-  playClock.time = 0.01
+  wLoop[With] = 0
+  lActive(With,wLoop[With])
+  Lights()
+  playClock.time = 0.1
   playClock:start()
 end
 
+function stopRhythm()
+  playClock:stop()
+  wLoop[With] = 1
+  lActive(With,wLoop[With])
+  crow.ii.wtape[1].speed(1)
+  Lights()
+end
